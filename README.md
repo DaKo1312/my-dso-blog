@@ -61,6 +61,7 @@ The repository is organized as follows:
 - `static/`: Stores static assets (e.g., images, icons) served directly without processing.
 - `sidebars.ts`: Configures the structure of sidebars in the documentation section.
 - `docusaurus.config.ts`: Main configuration file for customizing and managing Docusaurus behavior.
+- `example.env`: Template for the environment configuration. The deployment workflow copies it to `.env` before building, so it must never contain secrets.
 - `build/`: Generated after running the `npm run build` command. Contains the static website files ready for deployment.
 
 New content can be added as follows:
