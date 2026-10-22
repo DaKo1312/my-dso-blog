@@ -1,0 +1,20 @@
+name: CI/CD Workflow
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+  pages: write # to deploy to Pages
+  id-token: write
+
+jobs:
+  build-and-deploy-to-pages:
+    name: Build website and deploy to GitHub Pages
+    uses: ./.github/workflows/deploy.yaml

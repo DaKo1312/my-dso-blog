@@ -1,0 +1,6 @@
+label: "Knowledge Base"
+link:
+  type: "doc"
+  id: knowledge-base/intro
+  # description: "Learn the most important Knowledge Base concepts."
+position: 1
