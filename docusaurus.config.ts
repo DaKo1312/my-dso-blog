@@ -10,8 +10,8 @@ const blogEnabled = Boolean(process.env.BLOG_ENABLED === 'true')
 const gitRepositoryUrl = process.env.GIT_REPOSITORY_URL ?? "https://github.com/DaKo1312/my-dso-blog"
 
 const config: Config = {
-  title: 'DSO Live Demo Docs',
-  tagline: 'Dinosaurs are cool',
+  title: 'DevSecOps Learning Journal',
+  tagline: 'Daniel Korbmacher - DevSecOps Enthusiast with a passion for automation and clean pipelines',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -79,9 +79,9 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'My Site',
+      title: 'Learning Journal',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'DevSecOps Learning Journal Logo',
         src: 'img/logo.svg',
       },
       items: [
@@ -92,7 +92,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/spmse/dev-blog-template',
+          href: gitRepositoryUrl,
           label: 'Github',
           position: 'right',
         },
