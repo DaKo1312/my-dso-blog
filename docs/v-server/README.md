@@ -6,8 +6,9 @@ instead of the packaged welcome screen, and a git configuration that can talk to
 from the server itself.
 
 The machine runs Ubuntu 24.04.5 LTS and answers on `2.31.92.203`. Beyond the checklist,
-it also serves this documentation site from a container below
-[`/blog/`](http://2.31.92.203/blog/).
+it also serves this documentation site from a container, at the root of the host; the
+static page describing the machine is served from disk below
+[`/server/`](http://2.31.92.203/server/).
 
 ## TOC
 
@@ -75,7 +76,7 @@ What lives where on the machine:
 
 | Path | Contents |
 | --- | --- |
-| `/var/www/v-server/index.html` | the page that is served at `/` |
+| `/var/www/v-server/index.html` | the static page, served at `/server/` |
 | `/etc/nginx/sites-available/v-server` | the site configuration, symlinked into `sites-enabled` |
 | `/etc/ssh/sshd_config.d/99-hardening.conf` | the drop-in that switches password logins off |
 | `/var/log/nginx/v-server.*.log` | access and error log of this site |
@@ -267,8 +268,8 @@ Host github.com
 ### Serving this site from the server
 
 This part goes beyond the checklist. The documentation site itself also runs on the
-machine, built into a container image and published below `/blog/`, while `/` keeps
-serving the static page described above.
+machine, built into a container image and published at the root of the host. The static
+page described above is served from disk below `/server/`.
 
 The repository is cloned to `/opt/docusaurus/repo` over SSH, which is what the key from
 the previous section is for. The image is built from the `Dockerfile` in the repository
@@ -277,16 +278,17 @@ directory is copied into an `nginx` image, so the published image carries no sou
 no toolchain and no dependencies.
 
 ```bash
-docker build --build-arg BASE_URL=/blog/ -t docusaurus-blog:latest .
+docker build --build-arg BASE_URL=/ -t docusaurus-blog:latest .
 docker run -d --name docusaurus-blog --restart unless-stopped \
   -p 127.0.0.1:3000:80 docusaurus-blog:latest
 ```
 
 Two details carry the whole setup:
 
-`BASE_URL=/blog/` is needed at **build** time, not at run time. Docusaurus writes
-absolute paths into the generated HTML, so a site built for `/` would ask the browser
-for `/assets/...` and receive the static page's 404 instead of its stylesheets.
+`BASE_URL` is needed at **build** time, not at run time, because Docusaurus writes
+absolute paths into the generated HTML. The site answers at the root here, so `/` is
+correct; served below a prefix it would have to be built for that prefix, or the browser
+would ask for `/assets/...` and never find the stylesheets.
 
 `-p 127.0.0.1:3000:80` binds the published port to the loopback interface. Written as
 `-p 3000:80`, Docker would open port 3000 to the internet and add a rule to `iptables`
@@ -296,11 +298,7 @@ proxy and in no other way.
 The proxy itself is part of the site configuration:
 
 ```nginx
-location = /blog {
-    return 301 /blog/;
-}
-
-location /blog/ {
+location / {
     proxy_pass http://127.0.0.1:3000/;
     proxy_http_version 1.1;
     proxy_set_header Host              $host;
@@ -308,18 +306,26 @@ location /blog/ {
     proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
+
+location /server/ {
+    alias /var/www/v-server/;
+    index index.html;
+    try_files $uri $uri/ =404;
+}
 ```
 
-The trailing slash in `proxy_pass` strips the `/blog/` prefix before the request reaches
-the container, which serves the site at its own root. Without it, the container would be
-asked for `/blog/blog/...`. The redirect above it exists because `location /blog/` does
-not match a request for `/blog`.
+Both blocks can coexist because NGINX picks the **longest matching prefix**, not the
+first one written: a request for `/server/` is answered from disk and never reaches the
+proxy, everything else goes to the container. `alias` rather than `root` is what maps
+`/server/` onto a directory that is not named after the URL. A separate
+`location = /server { return 301 /server/; }` catches the address without the trailing
+slash, which `location /server/` does not match.
 
 Publishing a new version means pulling, rebuilding and replacing the container:
 
 ```bash
 cd /opt/docusaurus/repo && git pull
-docker build --build-arg BASE_URL=/blog/ -t docusaurus-blog:latest .
+docker build --build-arg BASE_URL=/ -t docusaurus-blog:latest .
 docker rm -f docusaurus-blog
 docker run -d --name docusaurus-blog --restart unless-stopped \
   -p 127.0.0.1:3000:80 docusaurus-blog:latest
@@ -363,15 +369,17 @@ Server: nginx
 
 The connection from the server to GitHub is confirmed with `ssh -T git@github.com`.
 
-The blog answers below its prefix while the static page keeps the root, and the
+The documentation site answers at the root, the static page below its prefix, and the
 container's own port stays closed to the outside:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/blog/
+curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/
+curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/server/
 curl -s -o /dev/null -w "%{http_code}\n" --max-time 5 http://2.31.92.203:3000/
 ```
 
 ```
+200
 200
 000
 ```
