@@ -11,7 +11,9 @@ it also serves this documentation site from a container below
 
 ## TOC
 
+- [Prerequisites](#prerequisites)
 - [Quickstart](#quickstart)
+- [Usage](#usage)
 - [Description](#description)
   - [Generating the key pair](#generating-the-key-pair)
   - [Deploying the public key](#deploying-the-public-key)
@@ -39,6 +41,17 @@ The two files that were deployed to the server are kept next to this page, in
 `docs/v-server/files/`: `index.html` is the page NGINX serves, `v-server.conf` is the
 site configuration that points at it.
 
+## Prerequisites
+
+- A virtual server running a current Ubuntu, reachable over the network, and an account
+  on it that is a member of the `sudo` group. The machine documented here runs
+  Ubuntu 24.04.5 LTS.
+- Its IP address and the user name of that account. A password is needed exactly once,
+  to deploy the first public key; everything after that runs over the key.
+- An SSH client on the workstation. `ssh`, `ssh-keygen`, `ssh-copy-id` and `scp` ship
+  with Linux and macOS, and on Windows with Git for Windows.
+- A GitHub account, if the server is to interact with repositories.
+
 ## Quickstart
 
 1. Generate a key pair **on your own machine**, never on the server.
@@ -48,6 +61,40 @@ site configuration that points at it.
    that points at it.
 5. Set `user.name` and `user.email` in git on the server and give the server its own
    key pair for GitHub.
+
+## Usage
+
+Connect to the server. The entry in `~/.ssh/config` shown below supplies the user and
+the key, so the address is enough:
+
+```bash
+ssh 2.31.92.203
+```
+
+What lives where on the machine:
+
+| Path | Contents |
+| --- | --- |
+| `/var/www/v-server/index.html` | the page that is served at `/` |
+| `/etc/nginx/sites-available/v-server` | the site configuration, symlinked into `sites-enabled` |
+| `/etc/ssh/sshd_config.d/99-hardening.conf` | the drop-in that switches password logins off |
+| `/var/log/nginx/v-server.*.log` | access and error log of this site |
+| `/opt/docusaurus/repo` | the clone this site is built from |
+
+Changing the page means copying a new file over it and nothing else, as NGINX reads it
+per request:
+
+```bash
+scp index.html 2.31.92.203:/tmp/
+ssh 2.31.92.203 'sudo cp /tmp/index.html /var/www/v-server/index.html'
+```
+
+Changing the site configuration needs a test and a reload. `reload` replaces the worker
+processes without dropping connections, which `restart` would:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
 
 ## Description
 
