@@ -15,16 +15,13 @@ This repository hosts a developer blog built with Docusaurus. It includes tools 
     - [Prerequisites](#prerequisites)
   - [Repository Structure](#repository-structure)
   - [Deployment](#deployment)
-    - [Deploy to Github Pages](#deploy-to-github-pages)
-    - [Deploying using NGINX](#deploying-using-nginx)
-    - [Contributing](#contributing)
 
 ## Quickstart
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v24 or later recommended)
-- [Docker](https://www.docker.com/products/docker-desktop) (only required if [deploying using NGINX](#deploying-using-nginx))
+- [Docker](https://www.docker.com/products/docker-desktop) (only required if you follow the [NGINX deployment guide](./docs/guides/deploy-docusaurus-with-docker-and-nginx.md))
 
 1. Installation
 
@@ -50,11 +47,7 @@ This repository hosts a developer blog built with Docusaurus. It includes tools 
 
 4. Deployment
 
-   In order to deploy onto Github Pages, ensure that your `docusaurus.config.ts` conforms with the [documentation guidelines](https://docusaurus.io/docs/deployment#deploying-to-github-pages). After that is ensured run the following command to deploy:
-
-   ```
-   $ USE_SSH=true npm run deploy
-   ```
+   No manual step is required. Pushing to the main branch publishes the site automatically.
 
 For detailed information about deploying this Docusaurus project, refer to the [Deployment](#deployment) section below.
 
@@ -68,6 +61,7 @@ The repository is organized as follows:
 - `static/`: Stores static assets (e.g., images, icons) served directly without processing.
 - `sidebars.ts`: Configures the structure of sidebars in the documentation section.
 - `docusaurus.config.ts`: Main configuration file for customizing and managing Docusaurus behavior.
+- `example.env`: Template for the environment configuration. The deployment workflow copies it to `.env` before building, so it must never contain secrets.
 - `build/`: Generated after running the `npm run build` command. Contains the static website files ready for deployment.
 
 New content can be added as follows:
@@ -77,28 +71,4 @@ New content can be added as follows:
 
 ## Deployment
 
-### Deploy to Github Pages
-
-To deploy using SSH:
-
-```
-$ USE_SSH=true npm run deploy
-```
-
-To deploy without using SSH, run:
-
-```
-$ GIT_USER=<Your GitHub username> npm run deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
-
-### Deploying using NGINX
-
-To deploy the site using NGINX and Docker, follow this [guide](./docs/guides/deploy-docusaurus-with-docker-and-nginx.md)
-
-### Contributing
-
-Currently, this project does not seek collaborators, but we're open to suggestions regarding enhancements or guides to prepare.
-Open an issue with a detailed description on the change you suggest and elaborate why it's benefitial for the project and vast majority.
-If accepted in the discussion, open a pull request from your fork of this repository to contribute your changes.
+The website is deployed to GitHub Pages by a prepared GitHub Actions workflow. As soon as a commit is pushed to the main branch, the workflow builds the site and publishes the result, so no manual deployment step is needed.
