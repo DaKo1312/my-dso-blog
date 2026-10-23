@@ -5,7 +5,9 @@ key based SSH access, a disabled password login, NGINX serving a custom entry po
 instead of the packaged welcome screen, and a git configuration that can talk to GitHub
 from the server itself.
 
-The machine runs Ubuntu 24.04.5 LTS and answers on `2.31.92.203`.
+The machine runs Ubuntu 24.04.5 LTS and answers on `2.31.92.203`. Beyond the checklist,
+it also serves this documentation site from a container below
+[`/blog/`](http://2.31.92.203/blog/).
 
 ## TOC
 
@@ -17,6 +19,7 @@ The machine runs Ubuntu 24.04.5 LTS and answers on `2.31.92.203`.
   - [NGINX with a custom entry point](#nginx-with-a-custom-entry-point)
   - [Git configuration](#git-configuration)
   - [GitHub access from the server](#github-access-from-the-server)
+  - [Serving this site from the server](#serving-this-site-from-the-server)
 - [Verification](#verification)
 - [Security notes](#security-notes)
 - [Checklist](#checklist)
@@ -214,6 +217,70 @@ Host github.com
     IdentitiesOnly yes
 ```
 
+### Serving this site from the server
+
+This part goes beyond the checklist. The documentation site itself also runs on the
+machine, built into a container image and published below `/blog/`, while `/` keeps
+serving the static page described above.
+
+The repository is cloned to `/opt/docusaurus/repo` over SSH, which is what the key from
+the previous section is for. The image is built from the `Dockerfile` in the repository
+root: a `node` stage runs `npm ci && npm run build`, and only the resulting `build`
+directory is copied into an `nginx` image, so the published image carries no sources,
+no toolchain and no dependencies.
+
+```bash
+docker build --build-arg BASE_URL=/blog/ -t docusaurus-blog:latest .
+docker run -d --name docusaurus-blog --restart unless-stopped \
+  -p 127.0.0.1:3000:80 docusaurus-blog:latest
+```
+
+Two details carry the whole setup:
+
+`BASE_URL=/blog/` is needed at **build** time, not at run time. Docusaurus writes
+absolute paths into the generated HTML, so a site built for `/` would ask the browser
+for `/assets/...` and receive the static page's 404 instead of its stylesheets.
+
+`-p 127.0.0.1:3000:80` binds the published port to the loopback interface. Written as
+`-p 3000:80`, Docker would open port 3000 to the internet and add a rule to `iptables`
+that a host firewall does not necessarily catch. The container is reachable through the
+proxy and in no other way.
+
+The proxy itself is part of the site configuration:
+
+```nginx
+location = /blog {
+    return 301 /blog/;
+}
+
+location /blog/ {
+    proxy_pass http://127.0.0.1:3000/;
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+The trailing slash in `proxy_pass` strips the `/blog/` prefix before the request reaches
+the container, which serves the site at its own root. Without it, the container would be
+asked for `/blog/blog/...`. The redirect above it exists because `location /blog/` does
+not match a request for `/blog`.
+
+Publishing a new version means pulling, rebuilding and replacing the container:
+
+```bash
+cd /opt/docusaurus/repo && git pull
+docker build --build-arg BASE_URL=/blog/ -t docusaurus-blog:latest .
+docker rm -f docusaurus-blog
+docker run -d --name docusaurus-blog --restart unless-stopped \
+  -p 127.0.0.1:3000:80 docusaurus-blog:latest
+```
+
+The site remains available while the new image builds, as the running container is only
+replaced once the build has succeeded.
+
 ## Verification
 
 The key based login works:
@@ -249,6 +316,19 @@ Server: nginx
 
 The connection from the server to GitHub is confirmed with `ssh -T git@github.com`.
 
+The blog answers below its prefix while the static page keeps the root, and the
+container's own port stays closed to the outside:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/blog/
+curl -s -o /dev/null -w "%{http_code}\n" --max-time 5 http://2.31.92.203:3000/
+```
+
+```
+200
+000
+```
+
 ## Security notes
 
 - No private key, no password and no host specific secret is part of this repository.
@@ -256,9 +336,12 @@ The connection from the server to GitHub is confirmed with `ssh -T git@github.co
 - The workstation key was created without a passphrase so that the setup could be
   automated. A key that protects something worth protecting should carry one and be
   unlocked through `ssh-agent` once per session.
-- The firewall (`ufw`) is inactive on this machine. Only SSH and NGINX listen on a port,
-  so nothing is exposed that should not be, but a rule set limited to ports 22 and 80
-  would be the obvious next step.
+- The firewall (`ufw`) is inactive on this machine. Only SSH and NGINX listen on a public
+  port — the blog container is bound to the loopback interface — so nothing is exposed
+  that should not be, but a rule set limited to ports 22 and 80 would be the obvious next
+  step. It would also catch the case this setup currently avoids by hand: Docker writes
+  its own `iptables` rules and can publish a port past a firewall that only knows about
+  `ufw`.
 
 ## Checklist
 
