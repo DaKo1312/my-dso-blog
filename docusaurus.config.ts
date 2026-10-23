@@ -152,9 +152,9 @@ const config: Config = {
 
 
 if (blogEnabled) {
-  (config.themeConfig.navbar as any).items.push({to: '/blog', label: 'Blog', position: 'left'});
+  (config.themeConfig as any).items.push({to: '/blog', label: 'Blog', position: 'left'});
   (
-    config.themeConfig.footer as any
+    config.themeConfig as any
   ).links.find((group: any) => group.title === "More").items.push({
     to: '/blog',
     label: 'Blog',
