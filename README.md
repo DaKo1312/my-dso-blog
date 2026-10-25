@@ -2,6 +2,13 @@
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
+> [!NOTE]
+> All guides and documentation in this repository are written for educational purposes
+> only. They record what I did while learning, on machines set up for that purpose, and
+> are not meant as production ready instructions. Anyone following them should review
+> every step against the current documentation of the software involved and against their
+> own security requirements.
+
 ## Repository Description
 
 This repository hosts a developer blog built with Docusaurus. It includes tools and scripts for creating, managing, and deploying static web content. The software supports rapid local development, customizable theming, and seamless deployment to platforms like GitHub Pages or NGINX.

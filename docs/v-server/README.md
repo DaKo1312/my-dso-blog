@@ -149,7 +149,21 @@ is writable by anyone but the owner.
 ### Disabling the password login
 
 The login with the key has to be verified **before** passwords are switched off,
-otherwise a mistake in the configuration locks the account out of the machine.
+otherwise a mistake in the configuration locks the account out of the machine. The check
+is one command, and it has to succeed without asking for anything:
+
+```bash
+ssh -o PasswordAuthentication=no daniel-korbmacher@2.31.92.203 'echo ok'
+```
+
+```
+ok
+```
+
+`PasswordAuthentication=no` is what makes this a real test rather than a habit: it tells
+the client not to fall back to a password prompt, so the command can only succeed through
+the key. A password prompt instead of `ok` means the key is not in place, and the rest of
+this section has to wait.
 
 Ubuntu reads `/etc/ssh/sshd_config.d/*.conf` from an `Include` at the very top of
 `sshd_config`, and `sshd` keeps the first value it sees for an option. A drop-in file
@@ -234,6 +248,15 @@ worker processes without dropping connections. A separate file can be tested on 
 with `nginx -t -c path/to/config`.
 
 ### Git configuration
+
+Most Ubuntu server images carry git already, but not all of them, so it is installed
+before it is configured. `apt-get` leaves an existing installation untouched, which makes
+the command safe to run either way:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git
+git --version
+```
 
 The identity on the server matches the one on the workstation and the one GitHub knows,
 so commits made on the server are attributed to the same account:
