@@ -262,8 +262,8 @@ The identity on the server matches the one on the workstation and the one GitHub
 so commits made on the server are attributed to the same account:
 
 ```bash
-git config --global user.name "DaKo1312"
-git config --global user.email "korbmacher.d@outlook.de"
+git config --global user.name "your-github-username"
+git config --global user.email "your-email@example.com"
 git config --global init.defaultBranch main
 ```
 
