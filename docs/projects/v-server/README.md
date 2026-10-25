@@ -39,7 +39,7 @@ Checkout this repository to see the configuration files described below
 </GithubLinkAdmonition>
 
 The two files that were deployed to the server are kept next to this page, in
-`docs/v-server/files/`: `index.html` is the page NGINX serves, `v-server.conf` is the
+`docs/projects/v-server/files/`: `index.html` is the page NGINX serves, `v-server.conf` is the
 site configuration that points at it.
 
 ## Prerequisites
