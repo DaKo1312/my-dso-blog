@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V-Server</title>
+<meta name="description" content="Landing page of a hardened V-Server running NGINX.">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --border: #e3e6ea;
+    --text: #1b1f24;
+    --muted: #5c6672;
+    --accent: #2f6f4f;
+    --accent-soft: #e7f1ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --panel: #1c2024;
+      --border: #2b3137;
+      --text: #e9ecef;
+      --muted: #9aa5b1;
+      --accent: #7dc8a0;
+      --accent-soft: #1f2b24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 16px;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  main { width: 100%; max-width: 640px; }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  h1 { margin: 16px 0 8px; font-size: clamp(28px, 6vw, 40px); line-height: 1.15; }
+  .lead { margin: 0 0 32px; color: var(--muted); }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  h2 { margin: 0 0 16px; font-size: 18px; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  li {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  li:first-of-type { border-top: 0; }
+  li svg { flex: 0 0 20px; margin-top: 3px; color: var(--accent); }
+  li b { font-weight: 600; }
+  li span { color: var(--muted); display: block; font-size: 14px; }
+  li a { color: var(--accent); font-weight: 500; }
+  footer { margin-top: 24px; color: var(--muted); font-size: 14px; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .9em;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <span class="badge">NGINX &middot; Ubuntu</span>
+  <h1>V-Server is up and running</h1>
+  <p class="lead">
+    This page replaces the default NGINX welcome screen. It is served from
+    <code>/var/www/v-server</code> by a dedicated server block.
+  </p>
+
+  <div class="card">
+    <h2>What is configured on this host</h2>
+    <ul>
+      <li>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>
+        <div><b>SSH public key authentication</b><span>The public key was uploaded from the workstation that generated the key pair.</span></div>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>
+        <div><b>Password authentication disabled</b><span>The SSH daemon accepts key based logins only.</span></div>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>
+        <div><b>NGINX with a custom entry point</b><span>A separate site configuration replaces the packaged default site.</span></div>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>
+        <div><b>Git ready for GitHub</b><span>User name and email are set and a server side deploy key talks to GitHub over SSH.</span></div>
+      </li>
+      <li>
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>
+        <div><b>Docusaurus in a container</b><span>My documentation site is built into an image and proxied at the <a href="/">site root</a>.</span></div>
+      </li>
+    </ul>
+  </div>
+
+  <footer>Documentation: see <code>docs/projects/v-server/README.md</code> in my DevSecOps blog repository.</footer>
+</main>
+</body>
+</html>

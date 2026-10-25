@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Docusaurus Blog
 
 This page documents how I turned the Developer Akademie blog template into my own
