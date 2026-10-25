@@ -5,10 +5,10 @@ key based SSH access, a disabled password login, NGINX serving a custom entry po
 instead of the packaged welcome screen, and a git configuration that can talk to GitHub
 from the server itself.
 
-The machine runs Ubuntu 24.04.5 LTS and answers on `2.31.92.203`. Beyond the checklist,
+The machine runs Ubuntu 24.04.5 LTS and answers on `SERVER_IP`. Beyond the checklist,
 it also serves this documentation site from a container, at the root of the host; the
 static page describing the machine is served from disk below
-[`/server/`](http://2.31.92.203/server/).
+[`/server/`](http://SERVER_IP/server/).
 
 ## TOC
 
@@ -69,7 +69,7 @@ Connect to the server. The entry in `~/.ssh/config` shown below supplies the use
 the key, so the address is enough:
 
 ```bash
-ssh 2.31.92.203
+ssh SERVER_IP
 ```
 
 What lives where on the machine:
@@ -86,8 +86,8 @@ Changing the page means copying a new file over it and nothing else, as NGINX re
 per request:
 
 ```bash
-scp index.html 2.31.92.203:/tmp/
-ssh 2.31.92.203 'sudo cp /tmp/index.html /var/www/v-server/index.html'
+scp index.html SERVER_IP:/tmp/
+ssh SERVER_IP 'sudo cp /tmp/index.html /var/www/v-server/index.html'
 ```
 
 Changing the site configuration needs a test and a reload. `reload` replaces the worker
@@ -117,9 +117,9 @@ A matching entry in `~/.ssh/config` makes every later command shorter and pins t
 identity, so the SSH client does not offer unrelated keys to the server:
 
 ```
-Host 2.31.92.203
-    HostName 2.31.92.203
-    User daniel-korbmacher
+Host SERVER_IP
+    HostName SERVER_IP
+    User SERVER_USER
     IdentityFile ~/.ssh/vserver_da
     IdentitiesOnly yes
 ```
@@ -130,7 +130,7 @@ Host 2.31.92.203
 the permissions on the way:
 
 ```bash
-ssh-copy-id -i ~/.ssh/vserver_da.pub daniel-korbmacher@2.31.92.203
+ssh-copy-id -i ~/.ssh/vserver_da.pub SERVER_USER@SERVER_IP
 ```
 
 This is the one step that still needs the password, because it is the last moment at
@@ -153,7 +153,7 @@ otherwise a mistake in the configuration locks the account out of the machine. T
 is one command, and it has to succeed without asking for anything:
 
 ```bash
-ssh -o PasswordAuthentication=no daniel-korbmacher@2.31.92.203 'echo ok'
+ssh -o PasswordAuthentication=no SERVER_USER@SERVER_IP 'echo ok'
 ```
 
 ```
@@ -362,18 +362,18 @@ replaced once the build has succeeded.
 The key based login works:
 
 ```bash
-ssh 2.31.92.203 'echo ok'
+ssh SERVER_IP 'echo ok'
 ```
 
 The password login is refused. Public key authentication is switched off for this test,
 so the client has nothing else to offer:
 
 ```bash
-ssh -o PubkeyAuthentication=no daniel-korbmacher@2.31.92.203
+ssh -o PubkeyAuthentication=no SERVER_USER@SERVER_IP
 ```
 
 ```
-daniel-korbmacher@2.31.92.203: Permission denied (publickey).
+SERVER_USER@SERVER_IP: Permission denied (publickey).
 ```
 
 The list in the parentheses is the point: it names the methods the server still accepts.
@@ -382,7 +382,7 @@ As long as `password` is missing from it, the password login is closed.
 The web server answers with the project page rather than the NGINX welcome screen:
 
 ```bash
-curl -I http://2.31.92.203/
+curl -I http://SERVER_IP/
 ```
 
 ```
@@ -396,9 +396,9 @@ The documentation site answers at the root, the static page below its prefix, an
 container's own port stays closed to the outside:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/
-curl -s -o /dev/null -w "%{http_code}\n" http://2.31.92.203/server/
-curl -s -o /dev/null -w "%{http_code}\n" --max-time 5 http://2.31.92.203:3000/
+curl -s -o /dev/null -w "%{http_code}\n" http://SERVER_IP/
+curl -s -o /dev/null -w "%{http_code}\n" http://SERVER_IP/server/
+curl -s -o /dev/null -w "%{http_code}\n" --max-time 5 http://SERVER_IP:3000/
 ```
 
 ```
